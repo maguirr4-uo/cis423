@@ -129,3 +129,34 @@ class PearsonTransformer(BaseEstimator, TransformerMixin):
   def fit_transform(self, X, y = None):
     result = self.transform(X)
     return result
+  
+class Sigma3Transformer(BaseEstimator, TransformerMixin):
+  def __init__(self, target_column):  
+    self.target_column = target_column
+
+  def fit(self, X, y = None):
+    print("Warning: Sigma3Transformer.fit does nothing.")
+    return X
+
+  def transform(self, X):
+    assert isinstance(X, pd.core.frame.DataFrame), f'Sigma3Transformer.transform expected Dataframe but got {type(X)} instead.'
+    assert self.target_column in X.columns.to_list(), f'Sigma3Transformer.transform unknown column {self.target_column}'
+    X_ = X.copy()
+    low_b, up_b = self.compute_3sigma_bounds(X_, self.target_column)
+    X_[self.target_column] = X_[self.target_column].clip(lower=low_b, upper=up_b)
+    return X_
+
+  def fit_transform(self, X, y = None):
+    result = self.transform(X)
+    return result
+
+  def compute_3sigma_bounds(self, df, column_name):
+    assert isinstance(df, pd.core.frame.DataFrame), f'expected Dataframe but got {type(df)} instead.'
+    assert column_name in df.columns.to_list(), f'unknown column {column_name}'
+    assert all([isinstance(v, (int, float)) for v in df[column_name].to_list()])
+
+    #compute mean of column - look for method
+    m = df[column_name].mean()
+    #compute std of column - look for method
+    sigma = df[column_name].std()
+    return m - 3*sigma, m + 3*sigma #(lower bound, upper bound)
