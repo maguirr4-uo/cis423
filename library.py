@@ -26,6 +26,7 @@ class MappingTransformer(BaseEstimator, TransformerMixin):
     result = self.transform(X)
     return result
   
+
 #This class will rename one or more columns.
 class RenamingTransformer(BaseEstimator, TransformerMixin):
   #your __init__ method below
@@ -45,6 +46,7 @@ class RenamingTransformer(BaseEstimator, TransformerMixin):
   def fit_transform(self, X, y = None):
     result = self.transform(X)
     return result
+
 
 class OHETransformer(BaseEstimator, TransformerMixin):
   def __init__(self, target_column, dummy_na=False, drop_first=True):  
@@ -74,6 +76,7 @@ class OHETransformer(BaseEstimator, TransformerMixin):
     result = self.transform(X)
     return result
   
+
 class DropColumnsTransformer(BaseEstimator, TransformerMixin):
   def __init__(self, column_list, action='drop'):
     assert action in ['keep', 'drop'], f'DropColumnsTransformer action {action} not in ["keep", "drop"]'
@@ -105,6 +108,7 @@ class DropColumnsTransformer(BaseEstimator, TransformerMixin):
     result = self.transform(X)
     return result
  
+
 class PearsonTransformer(BaseEstimator, TransformerMixin):
   def __init__(self, threshold):
     assert isinstance(threshold, float), f'PearsonTransformer expects float as an argument but got {type(threshold)} instead.'
@@ -130,6 +134,7 @@ class PearsonTransformer(BaseEstimator, TransformerMixin):
     result = self.transform(X)
     return result
   
+
 class Sigma3Transformer(BaseEstimator, TransformerMixin):
   def __init__(self, target_column):  
     self.target_column = target_column
@@ -161,6 +166,7 @@ class Sigma3Transformer(BaseEstimator, TransformerMixin):
     sigma = df[column_name].std()
     return m - 3*sigma, m + 3*sigma #(lower bound, upper bound)
   
+
 class TukeyTransformer(BaseEstimator, TransformerMixin):
   def __init__(self, target_column, fence='outer'):
     assert fence in ['inner', 'outer'], f'fence should be one of "inner, outer". got {fence} instead.'
@@ -194,6 +200,7 @@ class TukeyTransformer(BaseEstimator, TransformerMixin):
     result = self.transform(X)
     return result
 
+
 class MinMaxTransformer(BaseEstimator, TransformerMixin):
   def __init__(self):
     
@@ -209,6 +216,32 @@ class MinMaxTransformer(BaseEstimator, TransformerMixin):
     X_ = X.copy()
     
     X_ = (X_ - X_.min())/(X_.max() - X_.min())
+
+    return X_
+
+  def fit_transform(self, X, y = None):
+    result = self.transform(X)
+    return result
+
+
+class KNNTransformer(BaseEstimator, TransformerMixin):
+  def __init__(self,n_neighbors=5, weights="uniform", add_indicator=False):
+    self.n_neighbors = n_neighbors
+    self.weights=weights 
+    self.add_indicator=add_indicator
+
+  def fit(self, X, y = None):
+    print("Warning: KNNTransformer.fit does nothing.")
+    return X
+
+  def transform(self, X):
+    assert isinstance(X, pd.core.frame.DataFrame), f'KNNTransformer.transform expected Dataframe but got {type(X)} instead.'
+    
+    imputer = KNNImputer(n_neighbors=self.n_neighbors, weights=self.weights, add_indicator=self.add_indicator)  #do not add extra column for NaN
+    imputed_data = imputer.fit_transform(X)
+    np.count_nonzero(np.isnan(imputed_data))  #no NaNs left now
+
+    X_ = pd.DataFrame(imputed_data, columns = X.columns)
 
     return X_
 
