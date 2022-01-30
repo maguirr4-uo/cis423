@@ -2,6 +2,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.impute import KNNImputer
 from sklearn.pipeline import Pipeline
 
 #This class maps values in a column, numeric or categorical.
