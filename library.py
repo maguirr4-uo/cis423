@@ -1,8 +1,9 @@
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.impute import KNNImputer
+from sklearn.metrics import f1_score
 from sklearn.pipeline import Pipeline
 
 #This class maps values in a column, numeric or categorical.
@@ -249,3 +250,25 @@ class KNNTransformer(BaseEstimator, TransformerMixin):
   def fit_transform(self, X, y = None):
     result = self.transform(X)
     return result
+  
+# This function finds a random value (random state) through variance splitting.
+# Utilizes Sklearn's F1 Score
+def find_random_state(df, labels, n=200):
+  var = []  #collect test_error/train_error where error based on F1 score
+
+  for i in range(1, n):
+      train_X, test_X, train_y, test_y = train_test_split(df, labels, test_size=0.2, shuffle=True,
+                                                      random_state=i, stratify=labels)
+      model.fit(train_X, train_y)  #train model
+      train_pred = model.predict(train_X)  #predict against training set
+      test_pred = model.predict(test_X)    #predict against test set
+      train_error = f1_score(train_y, train_pred)  #how bad did we do with prediction on training data?
+      test_error = f1_score(test_y, test_pred)     #how bad did we do with prediction on test data?
+      error_ratio = test_error/train_error        #take the ratio
+      var.append(error_ratio)
+
+  rs_value = sum(var)/len(var)
+
+  idx = np.array(abs(var - rs_value)).argmin()
+
+  return idx
