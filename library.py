@@ -8,9 +8,6 @@ from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 
-# Model for use in our programs
-model = LogisticRegressionCV(random_state=1, max_iter=5000)
-
 #This class maps values in a column, numeric or categorical.
 class MappingTransformer(BaseEstimator, TransformerMixin):
   
@@ -260,6 +257,7 @@ class KNNTransformer(BaseEstimator, TransformerMixin):
 # Utilizes Sklearn's F1 Score
 def find_random_state(df, labels, n=200):
   var = []  #collect test_error/train_error where error based on F1 score
+  model = LogisticRegressionCV(random_state=1, max_iter=5000)
   
   for i in range(1, n):
       train_X, test_X, train_y, test_y = train_test_split(df, labels, test_size=0.2, shuffle=True,
