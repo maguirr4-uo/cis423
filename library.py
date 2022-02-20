@@ -2,11 +2,15 @@
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.experimental import enable_halving_search_cv
 from sklearn.impute import KNNImputer
 from sklearn.linear_model import LogisticRegressionCV
-from sklearn.metrics import f1_score
+from sklearn.metrics import precision_score, recall_score, f1_score, accuracy_score
+from sklearn.model_selection import HalvingGridSearchCV
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
+
+############################ Transformer Classes #######################################
 
 #This class maps values in a column, numeric or categorical.
 class MappingTransformer(BaseEstimator, TransformerMixin):
@@ -252,7 +256,9 @@ class KNNTransformer(BaseEstimator, TransformerMixin):
   def fit_transform(self, X, y = None):
     result = self.transform(X)
     return result
-  
+
+###################### SKLearn Model Helper Functions #########################  
+
 # This function finds a random value (random state) through variance splitting.
 # Utilizes Sklearn's F1 Score
 def find_random_state(df, labels, n=200):
@@ -275,6 +281,36 @@ def find_random_state(df, labels, n=200):
   idx = np.array(abs(var - rs_value)).argmin()
 
   return idx
+
+
+########################## Tuning functions #############################
+
+def halving_search(model, grid, x_train, y_train, factor=3, scoring='roc_auc'):
+  #your code below
+
+  halving_cv = HalvingGridSearchCV(
+    model, grid,  #our model and the parameter combos we want to try
+    scoring=scoring,
+    n_jobs=-1,
+    min_resources="exhaust",
+    factor=factor,  #a typical place to start so triple samples and take top 3rd of combos on each iteration
+    cv=5, random_state=1234,
+    refit=True  #remembers the best combo and gives us back that model already trained and ready for testing
+  )
+
+  return halving_cv.fit(x_train, y_train)
+
+def threshold_results(thresh_list, actuals, predicted):
+  result_df = pd.DataFrame(columns=['threshold', 'precision', 'recall', 'f1', 'accuracy'])
+  for t in thresh_list:
+    yhat = [1 if v >=t else 0 for v in predicted]
+    #note: where TP=0, the Precision and Recall both become 0
+    precision = precision_score(actuals, yhat, zero_division=0)
+    recall = recall_score(actuals, yhat, zero_division=0)
+    f1 = f1_score(actuals, yhat)
+    accuracy = accuracy_score(actuals, yhat)
+    result_df.loc[len(result_df)] = {'threshold':t, 'precision':precision, 'recall':recall, 'f1':f1, 'accuracy':accuracy}
+  return result_df
 
 
 ################ Pipeline transformers #####################
