@@ -1,6 +1,10 @@
 # cis423
 
-This repository contains a dataset that I used in a Computer Science course for a final project, as well as functions to wrangle said dataset. Credit goes to Stephen Fickas, the professor of the course, for assistance and a portion of the code used here.
+This repository contains a dataset that I used in a Computer Science course for a final project, as well as functions to wrangle said dataset. It also includes some of the work I made in wrangling and tuning the data. It does not include any code to set up the website that is the final product.
+
+If you are a recruiter or university admissions officer, and you would like to see the website in action, please contact me so that I can show it to you. I am still working on some details for it.
+
+Credit goes to Stephen Fickas, the professor of the course, for assistance and a portion of the code used here.
 
 The dataset was obtained from the following site:
 
